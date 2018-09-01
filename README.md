@@ -3,7 +3,7 @@
 
 ## Introduction ##
 
-`simple-socks5` is a simple socks5 proxy server implementation from scratch, based on `netty` 
+`simple-socks5` is a simple implementation of socks5 proxy server from scratch, based on `netty`.
 
 You can test it using `cURL` and browser.
 
