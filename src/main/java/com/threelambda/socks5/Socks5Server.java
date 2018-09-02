@@ -39,7 +39,7 @@ public class Socks5Server {
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
-                        logger.info("initChannel.");
+                        logger.debug("initChannel.");
                         ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG), new Socks5ServerHandler());
                     }
                 });
