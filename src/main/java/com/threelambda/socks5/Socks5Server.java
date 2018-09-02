@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class Socks5Server {
 
     private final static Logger logger = LoggerFactory.getLogger(Socks5Server.class);
-    static final int PORT = Integer.parseInt(System.getProperty("port", "1082"));
+    static final int PORT = Integer.parseInt(System.getProperty("port", "1086"));
 
     public static void main(String[] args) {
         try {
