@@ -173,7 +173,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
                     ctx.writeAndFlush(responseBuf);
 
                 } else {
-                    logger.warn("connect fail.");
+                    logger.warn("distAddr={}, distPort={}|connect fail.",distAddr, distPort);
                     future.channel().writeAndFlush("fail".getBytes());
                 }
             }
