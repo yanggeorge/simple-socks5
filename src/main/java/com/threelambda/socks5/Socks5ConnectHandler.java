@@ -24,13 +24,13 @@ public class Socks5ConnectHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        logger.info("connect handler channelRead");
+        logger.debug("connect handler channelRead");
         front.write(msg);
     }
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        logger.info("connect handler readComplete");
+        logger.debug("connect handler readComplete");
         front.flush();
     }
 }

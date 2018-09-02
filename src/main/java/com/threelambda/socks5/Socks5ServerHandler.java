@@ -37,7 +37,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf buf = (ByteBuf)msg;
-        logger.info("state={}", state.name());
+        logger.debug("state={}", state.name());
         if (buf.readerIndex() == buf.writerIndex()) {
             return;
         }
@@ -61,7 +61,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void handleConnecting(ChannelHandlerContext ctx, ByteBuf buf) {
-        logger.info("handleConnecting");
+        logger.debug("handleConnecting");
         if (back != null) {
             back.write(buf);
         }
@@ -69,7 +69,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        logger.info("channelReadComplete");
+        logger.debug("channelReadComplete");
         if (back != null) {
             back.flush();
         }
@@ -83,7 +83,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
         for (int i = 0; i < nmethod; i++) {
             methods.add(buf.readByte());
         }
-        logger.info("version={}, nmethods={}", version, methods);
+        logger.debug("version={}, nmethods={}", version, methods);
 
         if (version != 5) {
             //如果不是 socks5 怎么处理呢？
@@ -116,7 +116,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
         } else if (atyp == 3) {
             //domain
             int length = buf.readByte() & 0xFF;
-            logger.info("addr length = {}", length);
+            logger.debug("addr length = {}", length);
             addrBytes = new byte[length];
             buf.readBytes(addrBytes);
             buf.readBytes(portBytes);
@@ -127,7 +127,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
 
         if (cmd == 1) {
             // CONNECT
-            logger.info("connect..");
+            logger.debug("connect..");
             connect(ctx, distAddr, distPort, addrBytes, portBytes, atyp);
             this.state = Socks5State.CONNECTING;
 
@@ -155,9 +155,9 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
         future.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
-                logger.info("connect complete.");
+                logger.debug("connect complete.");
                 if (future.isSuccess()) {
-                    logger.info("connect success.");
+                    logger.debug("connect success.");
                     //连接成功则返回客户端应答
                     ByteBuf responseBuf = Unpooled.buffer();
                     byte VER = 0x05;
@@ -173,7 +173,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
                     ctx.writeAndFlush(responseBuf);
 
                 } else {
-                    logger.info("connect fail.");
+                    logger.warn("connect fail.");
                     future.channel().writeAndFlush("fail".getBytes());
                 }
             }

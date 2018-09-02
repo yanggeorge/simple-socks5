@@ -44,8 +44,8 @@ public class Socks5Server {
                     }
                 });
 
-            ChannelFuture future = b.bind(PORT).sync();
             logger.info("[127.0.0.1:{}] bind.", PORT);
+            ChannelFuture future = b.bind(PORT).sync();
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
