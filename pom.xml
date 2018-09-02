@@ -41,7 +41,14 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <configuration>
+                    <mainClass>com.threelambda.socks5.Socks5Server</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
-
     </build>
 </project>

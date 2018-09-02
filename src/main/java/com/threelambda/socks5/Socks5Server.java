@@ -18,9 +18,14 @@ import org.slf4j.LoggerFactory;
 public class Socks5Server {
 
     private final static Logger logger = LoggerFactory.getLogger(Socks5Server.class);
+    static final int PORT = Integer.parseInt(System.getProperty("port", "1082"));
 
     public static void main(String[] args) {
-        new Socks5Server().start();
+        try {
+            new Socks5Server().start();
+        } catch (Exception e) {
+            logger.error("socks5server start fail.", e);
+        }
     }
 
     private void start() {
@@ -39,7 +44,8 @@ public class Socks5Server {
                     }
                 });
 
-            ChannelFuture future = b.bind(1086).sync();
+            ChannelFuture future = b.bind(PORT).sync();
+            logger.info("[127.0.0.1:{}] bind.", PORT);
             future.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
