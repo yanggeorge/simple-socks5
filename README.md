@@ -22,5 +22,27 @@ You can test it using `cURL` and browser.
     
 ## Test proxy server ##
 
+- use cURl
 
-    curl --socks5 127.0.0.1:1086 http://threelambda.com 
+    
+    curl --socks5 127.0.0.1:1086 http://threelambda.com
+    
+- use browser
+
+  设置socks5代理
+  
+ ![set_proxy]("./doc/set_proxy.png") 
+ 
+  日志
+  
+    23:02:59.359 [nioEventLoopGroup-3-2] INFO  c.t.socks5.Socks5ServerHandler - distAddr=www.google.com, distPort=443
+    23:03:00.281 [nioEventLoopGroup-3-4] INFO  c.t.socks5.Socks5ServerHandler - version=5, cmd=1, rsv=0, atyp=3
+    23:03:00.281 [nioEventLoopGroup-3-4] INFO  c.t.socks5.Socks5ServerHandler - distAddr=www.baidu.com, distPort=443
+    23:03:00.281 [nioEventLoopGroup-3-3] INFO  c.t.socks5.Socks5ServerHandler - version=5, cmd=1, rsv=0, atyp=3
+    23:03:00.281 [nioEventLoopGroup-3-6] INFO  c.t.socks5.Socks5ServerHandler - version=5, cmd=1, rsv=0, atyp=3
+    23:03:00.280 [nioEventLoopGroup-3-5] INFO  c.t.socks5.Socks5ServerHandler - version=5, cmd=1, rsv=0, atyp=3
+    23:03:00.282 [nioEventLoopGroup-3-3] INFO  c.t.socks5.Socks5ServerHandler - distAddr=www.baidu.com, distPort=443
+    23:03:00.282 [nioEventLoopGroup-3-8] INFO  c.t.socks5.Socks5ServerHandler - version=5, cmd=1, rsv=0, atyp=3
+    23:03:00.283 [nioEventLoopGroup-3-8] INFO  c.t.socks5.Socks5ServerHandler - distAddr=ss0.baidu.com, distPort=443
+    23:03:00.283 [nioEventLoopGroup-3-5] INFO  c.t.socks5.Socks5ServerHandler - distAddr=sp1.baidu.com, distPort=443
+    23:03:00.283 [nioEventLoopGroup-3-7] INFO  c.t.socks5.Socks5ServerHandler - version=5, cmd=1, rsv=0, atyp=3
