@@ -31,7 +31,7 @@ You can test it using `cURL` and browser.
 
   设置socks5代理
   
- <img alt="setproxy" src="./src/doc/set_proxy.png" width="200" height="200" />
+ <img alt="setproxy" src="./src/doc/set_proxy.png" width="400"  />
  
  
   日志
