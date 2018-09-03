@@ -19,6 +19,10 @@ public class Socks5Server {
 
     private final static Logger logger = LoggerFactory.getLogger(Socks5Server.class);
     static final int PORT = Integer.parseInt(System.getProperty("port", "1086"));
+    static final int AUTH = Integer.parseInt(System.getProperty("auth", "1"));
+    static final String USER = System.getProperty("user", "ym");
+    static final String PASS = System.getProperty("pass", "1234");
+
 
     public static void main(String[] args) {
         try {
@@ -40,7 +44,8 @@ public class Socks5Server {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         logger.debug("initChannel.");
-                        ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG), new Socks5ServerHandler());
+                        ch.pipeline().addLast(new LoggingHandler(LogLevel.DEBUG),
+                            new Socks5ServerHandler(AUTH, USER, PASS));
                     }
                 });
 

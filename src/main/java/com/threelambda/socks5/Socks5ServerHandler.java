@@ -28,11 +28,26 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(Socks5ServerHandler.class);
 
+    /**
+     * 是否增加用户密码验证
+     */
+    private boolean auth = false;
+    private String user;
+    private String pass;
+
     private Socks5State state = Socks5State.INIT;
     /**
      * 与dest建立的channel
      */
     private Channel back;
+
+    Socks5ServerHandler(int auth, String user, String pass) {
+        if (auth > 0) {
+            this.auth = true;
+            this.user = user;
+            this.pass = pass;
+        }
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -44,6 +59,10 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
         switch (state) {
             case INIT: {
                 handleInit(ctx, buf);
+                break;
+            }
+            case AUTH: {
+                handleAuth(ctx, buf);
                 break;
             }
             case COMMAND: {
@@ -75,32 +94,84 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-
     private void handleInit(ChannelHandlerContext ctx, ByteBuf buf) {
-        int version = buf.readUnsignedByte();
+        int ver = buf.readUnsignedByte();
+        ByteBuf resp = Unpooled.buffer();
+        if (ver != 5) {
+            //如果不是 socks5 怎么处理呢
+            resp.writeBytes(new byte[] {0x05, (byte)0xFF});
+            ctx.writeAndFlush(resp);
+            return;
+        }
         int nmethod = buf.readUnsignedByte();
         List<Byte> methods = new ArrayList<>();
         for (int i = 0; i < nmethod; i++) {
             methods.add(buf.readByte());
         }
-        logger.debug("version={}, nmethods={}", version, methods);
+        logger.debug("ver={}, nmethods={}", ver, methods);
 
-        if (version != 5) {
-            //如果不是 socks5 怎么处理呢？
-        } else {
-            ByteBuf b = Unpooled.buffer();
-            b.writeBytes(new byte[] {0x05, 0x00});
-            ctx.writeAndFlush(b);
+        if (!auth) {
+            //如果不需要认证，则直返回
+            resp.writeBytes(new byte[] {0x05, 0x00});
+            ctx.writeAndFlush(resp);
             state = Socks5State.COMMAND;
+            return;
+        }
+
+        if (auth && methods.contains((byte)0x02)) {
+            //如果需要用户名密码认证
+            resp.writeBytes(new byte[] {0x05, 0x02});
+            ctx.writeAndFlush(resp);
+            state = Socks5State.AUTH;
+        }
+    }
+
+    private void handleAuth(ChannelHandlerContext ctx, ByteBuf buf) {
+        logger.debug("handleAuth");
+        /*
+        当前auth的自协议只有一种 https://tools.ietf.org/html/rfc1929
+        +----+------+----------+------+----------+
+        |VER | ULEN |  UNAME   | PLEN |  PASSWD  |
+        +----+------+----------+------+----------+
+        | 1  |  1   | 1 to 255 |  1   | 1 to 255 |
+        +----+------+----------+------+----------+
+        */
+        int ver = buf.readUnsignedByte();
+        ByteBuf resp = Unpooled.buffer();
+        if (ver != 1) {
+            logger.info("auth ver = {}", ver);
+            resp.writeBytes(new byte[] {0x05, (byte)0xFF});
+            ctx.writeAndFlush(resp);
+            return;
+        }
+
+        int ulen = buf.readUnsignedByte();
+        byte[] uname = new byte[ulen];
+        buf.readBytes(uname);
+        int plen = buf.readUnsignedByte();
+        byte[] passwd = new byte[plen];
+        buf.readBytes(passwd);
+        String nameString = new String(uname);
+        String passString = new String(passwd);
+        logger.info("user={}, pass={}", nameString, passString);
+
+        if (nameString.equals(this.user) && passString.equals(this.pass)) {
+            resp.writeBytes(new byte[] {0x05, 0x00});
+            ctx.writeAndFlush(resp);
+            state = Socks5State.COMMAND;
+        } else {
+            logger.info("uname={}|auth fail", nameString);
+            resp.writeBytes(new byte[] {0x05, (byte)0xFF});
+            ctx.writeAndFlush(resp);
         }
     }
 
     private void handleCommand(ChannelHandlerContext ctx, ByteBuf buf) {
-        int version = buf.readUnsignedByte();
+        int ver = buf.readUnsignedByte();
         int cmd = buf.readUnsignedByte();
         int rsv = buf.readUnsignedByte();
         int atyp = buf.readUnsignedByte();
-        logger.info("version={}, cmd={}, rsv={}, atyp={}", version, cmd, rsv, atyp);
+        logger.info("ver={}, cmd={}, rsv={}, atyp={}", ver, cmd, rsv, atyp);
         String distAddr = null;
         Integer distPort = null;
         byte[] addrBytes = null;
@@ -165,7 +236,7 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
                     byte RSV = 0x00;
                     byte ATYP = (byte)atyp;
                     responseBuf.writeByte(VER).writeByte(REP).writeByte(RSV).writeByte(ATYP);
-                    if(atyp == 1) {
+                    if (atyp == 1) {
                         responseBuf.writeBytes(addrBytes).writeBytes(portBytes);
                     } else if (atyp == 3) {
                         responseBuf.writeByte(addrBytes.length).writeBytes(addrBytes).writeBytes(portBytes);
@@ -173,14 +244,12 @@ public class Socks5ServerHandler extends ChannelInboundHandlerAdapter {
                     ctx.writeAndFlush(responseBuf);
 
                 } else {
-                    logger.warn("distAddr={}, distPort={}|connect fail.",distAddr, distPort);
+                    logger.warn("distAddr={}, distPort={}|connect fail.", distAddr, distPort);
                     future.channel().writeAndFlush("fail".getBytes());
                 }
             }
         });
     }
-
-
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
