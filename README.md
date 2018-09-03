@@ -24,7 +24,6 @@ You can test it using `cURL` and browser.
 
 - use cURl
 
-    
     curl --socks5 127.0.0.1:1086 http://threelambda.com
     
 - use browser
