@@ -8,28 +8,11 @@ import org.slf4j.LoggerFactory;
  */
 class Util {
 
-    private static final Logger logger = LoggerFactory.getLogger(Util.class);
-
-    static String getAddr(byte[] addrBytes) {
-        StringBuilder s = new StringBuilder();
-        boolean first = true;
-        for (byte addrByte : addrBytes) {
-            String value = String.valueOf(addrByte & 0xFF);
-            if (first) {
-                s.append(value);
-                first = false;
-            } else {
-                s.append(".").append(value);
-            }
-        }
-        return s.toString();
+    static String getAddr(byte[] addr) {
+        return String.format("%d.%d.%d.%d", addr[0] & 0xFF, addr[1] & 0xFF, addr[2] & 0xFF, addr[3] & 0xFF);
     }
 
-    static Integer getPort(byte[] portBytes) {
-        Integer n = 0;
-        for (byte portByte : portBytes) {
-            n = n * 256 + (portByte & 0xFF);
-        }
-        return n;
+    static Integer getPort(byte[] port) {
+        return port[0] << 8 | (port[1] & 0xFF);
     }
 }
